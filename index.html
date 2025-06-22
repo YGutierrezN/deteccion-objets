@@ -11,7 +11,7 @@
       background-color: #f8f9fa;
     }
     #canvas {
-      border: 3px dashed #6f42c1;
+      border: 2px dashed #6c757d;
       border-radius: 10px;
     }
     #resultado {
@@ -27,21 +27,26 @@
 </head>
 <body>
   <!-- Navbar -->
-  <nav class="navbar fixed-top rounded-bottom" style="background-color: #6f42c1;">
+  <nav class="navbar  rounded-bottom  " style="background-color: #6f42c1">
     <div class="container-fluid">
-      <a class="navbar-brand d-flex align-items-center" href="#">
+      <a class="navbar-brand d-flex align-items-center text-light " href="#">
         <img src="LogotipoV2-Simple.png" alt="Logo" width="40" height="40" class="me-2">
         Clasificador de Objetos
       </a>
     </div>
   </nav>
-  <div style="height: 5px;"></div>
+  <div style="height: 70px;"></div>
 
-  
+  <!-- Spinner -->
+  <div id="loader" class="d-flex justify-content-center align-items-center">
+    <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
 
   <!-- Contenido -->
   <div class="container text-center" id="contenido" style="display: none;">
-    <h2 class="my-3">Clasificador para personas con discapacidades visaules</h2>
+    <h2 class="my-3">Clasificador   De objetos para personas con discapacidades visuales >
     <p>Clasifica objetos con la cámara web</p>
 
     <canvas id="canvas" width="400" height="400" class="img-fluid mb-3"></canvas>
@@ -57,7 +62,9 @@
   </div>
 
   <!-- Footer -->
-  <footer class="text-center mt-5 py-4  text-light" style="background-color: #6f42c1;">
+  <footer class="text-center mt-5 py-4  text-light" style="background-color: #6f42c1">
+    <p>Sistemas Inteligentes 2025
+    <p>© 2025 deepnono    </p>
   </footer>
 
   <!-- Scripts -->
@@ -81,7 +88,7 @@
       document.getElementById("loader").style.display = "flex";
       try {
         console.log("Cargando modelo...");
-        modelo = await tf.loadGraphModel("model.json");
+        modelo = await tf.loadGraphModel("modelo_web/model.json");
         console.log("✅ Modelo cargado correctamente");
 
         document.getElementById("loader").style.display = "none";
@@ -154,7 +161,7 @@
 
       resultado.array().then(data => {
         const indexMax = data[0].indexOf(Math.max(...data[0]));
-        document.getElementById("resultado").innerText = "CObjeto detectado es: " + clases[indexMax];
+        document.getElementById("resultado").innerText = "Clase: " + clases[indexMax];
       });
     }
 
