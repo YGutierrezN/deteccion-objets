@@ -87,7 +87,7 @@
       document.getElementById("loader").style.display = "flex";
       try {
         console.log("Cargando modelo...");
-        modelo = await tf.loadGraphModel("modelo_web/model.json");
+        modelo = await tf.loadGraphModel("model.json");
         console.log("✅ Modelo cargado correctamente");
 
         document.getElementById("loader").style.display = "none";
