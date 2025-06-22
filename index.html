@@ -6,68 +6,25 @@
   <title>Clasificador de Objetos</title>
   <link rel="icon" type="image/png" href="favicon-32x32.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
   <style>
     body {
-      background: linear-gradient(135deg, #f8f9fa, #e3f2fd);
-      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8f9fa;
     }
-
-    .navbar {
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
     #canvas {
-      border: 3px dashed #6f42c1;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    .btn-custom {
-      border-radius: 50px;
-      padding: 10px 25px;
-      font-weight: 600;
-      transition: all 0.3s ease-in-out;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    }
-
-    .btn-custom:hover {
-      transform: scale(1.05);
-    }
-
-    #resultado {
-      font-weight: bold;
-      font-size: 2rem;
-      text-align: center;
-      color: #198754;
-      background: rgba(25,135,84,0.1);
-      padding: 10px;
+      border: 2px dashed #6c757d;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(25,135,84,0.2);
-      margin-top: 1rem;
     }
-
+    #resultado {
+      font-size: 1.8rem;
+      margin-top: 1rem;
+      font-weight: bold;
+      color: #198754;
+    }
     #loader {
       height: 100vh;
     }
-
-    footer {
-      background-color: #212529;
-      color: #adb5bd;
-      padding: 40px 20px;
-    }
-
-    footer a {
-      color: #0dcaf0;
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
   </style>
 </head>
-
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-dark bg-dark fixed-top">
@@ -78,19 +35,19 @@
       </a>
     </div>
   </nav>
-  <div style="height: 70px;"></div> <!-- Espacio debajo del navbar -->
+  <div style="height: 70px;"></div>
 
-  <!-- Spinner de carga -->
+  <!-- Spinner -->
   <div id="loader" class="d-flex justify-content-center align-items-center">
     <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
       <span class="visually-hidden">Cargando...</span>
     </div>
   </div>
 
-  <!-- Contenido principal oculto al inicio -->
+  <!-- Contenido -->
   <div class="container text-center" id="contenido" style="display: none;">
-    <h1 class="display-5 fw-bold my-4">Clasificación con TensorFlow.js</h1>
-    <p class="lead mb-3">Clasifica objetos con la cámara: camion, carro, persona, etc.</p>
+    <h2 class="my-3">Clasificador con TensorFlow.js</h2>
+    <p>Clasifica objetos con la cámara web</p>
 
     <canvas id="canvas" width="400" height="400" class="img-fluid mb-3"></canvas>
     <video id="video" autoplay playsinline class="d-none"></video>
@@ -98,16 +55,15 @@
 
     <div id="resultado"></div>
 
-    <div class="mt-4">
-      <button class="btn btn-success btn-custom me-2" onclick="predecir()">📷 Capturar y Predecir</button>
-      <button class="btn btn-outline-secondary btn-custom" onclick="cambiarCamara()">🔄 Cambiar Cámara</button>
+    <div class="mt-3">
+      <button class="btn btn-success me-2" onclick="predecir()">📷 Capturar y Predecir</button>
+      <button class="btn btn-outline-secondary" onclick="cambiarCamara()">🔄 Cambiar Cámara</button>
     </div>
   </div>
 
   <!-- Footer -->
-  <footer class="text-center mt-5">
-    <h2 class="text-white mb-3">Ringa Tech</h2>
-    <p class="mb-0">Visita <a href="https://youtube.com/RingaTech">mi canal de YouTube</a> para más proyectos con IA y programación.</p>
+  <footer class="text-center mt-5 py-4 bg-dark text-light">
+    <p>Visita <a href="https://youtube.com/RingaTech" target="_blank">Ringa Tech</a> para más proyectos.</p>
   </footer>
 
   <!-- Scripts -->
@@ -128,25 +84,31 @@
 
     // Cargar modelo
     (async () => {
-  document.getElementById("loader").style.display = "flex";
-  try {
-    console.log("Cargando modelo...");
-    modelo = await tf.loadGraphModel("/model.json");
-    console.log("✅ Modelo cargado correctamente");
-    document.getElementById("loader").style.display = "none";
-    document.getElementById("contenido").style.display = "block";
-    mostrarCamara();
-  } catch (error) {
-    console.error("❌ Error al cargar el modelo:", error);
-    document.getElementById("loader").innerHTML = `
-      <div class="text-center">
-        <p class="text-danger fw-bold">❌ Error al cargar el modelo</p>
-        <p style="font-size: 0.9rem;">Revisa la consola (F12) para más detalles.</p>
-      </div>
-    `;
-  }
-})();
+      document.getElementById("loader").style.display = "flex";
+      try {
+        console.log("Cargando modelo...");
+        modelo = await tf.loadGraphModel("modelo_web/model.json");
+        console.log("✅ Modelo cargado correctamente");
 
+        document.getElementById("loader").style.display = "none";
+        const contenido = document.getElementById("contenido");
+        if (contenido) {
+          console.log("📷 Mostrando contenido");
+          contenido.style.display = "block";
+        } else {
+          console.error("❌ No se encontró #contenido");
+        }
+
+        mostrarCamara();
+      } catch (error) {
+        console.error("❌ Error al cargar el modelo:", error);
+        document.getElementById("loader").innerHTML = `
+          <div class="text-center text-danger fw-bold">
+            Error al cargar el modelo.<br>Revisa la consola (F12).
+          </div>
+        `;
+      }
+    })();
 
     function mostrarCamara() {
       const opciones = {
@@ -160,11 +122,13 @@
           video.srcObject = stream;
           procesarCamara();
         })
-        .catch(err => alert("No se pudo acceder a la cámara"));
+        .catch(() => alert("No se pudo acceder a la cámara"));
     }
 
     function cambiarCamara() {
-      if (currentStream) currentStream.getTracks().forEach(track => track.stop());
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+      }
       facingMode = (facingMode === "user") ? "environment" : "user";
       mostrarCamara();
     }
@@ -200,7 +164,6 @@
       });
     }
 
-    // Función Hermite resize
     function resample_single(canvas, width, height, resize_canvas) {
       const ctx = canvas.getContext("2d");
       const ctx2 = resize_canvas.getContext("2d");
@@ -222,8 +185,8 @@
             const dy = Math.abs(center_y - (yy + 0.5)) / ratio_h_half;
             const center_x = (i + 0.5) * ratio_w;
             const w0 = dy * dy;
-
             const xx_start = Math.floor(i * ratio_w), xx_stop = Math.ceil((i + 1) * ratio_w);
+
             for (let xx = xx_start; xx < xx_stop; xx++) {
               const dx = Math.abs(center_x - (xx + 0.5)) / ratio_w_half;
               let w = Math.sqrt(w0 + dx * dx);
