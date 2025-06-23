@@ -97,14 +97,16 @@
         modelo = await tf.loadGraphModel("model.json");
         console.log("✅ Modelo cargado correctamente");
 
-        document.getElementById("loader").style.display = "none";
-        const contenido = document.getElementById("contenido");
-        if (contenido) {
-          console.log("📷 Mostrando contenido");
-          contenido.style.display = "block";
-        } else {
-          console.error("❌ No se encontró #contenido");
-        }
+        const loader = document.getElementById("loader");
+if (loader) loader.remove(); // Oculta y elimina el spinner
+
+const contenido = document.getElementById("contenido");
+if (contenido) {
+  console.log("📷 Mostrando contenido");
+  contenido.style.display = "block";
+} else {
+  console.error("❌ No se encontró #contenido");
+}
 
         mostrarCamara();
       } catch (error) {
