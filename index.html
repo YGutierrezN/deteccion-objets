@@ -91,30 +91,36 @@
 
     // Cargar modelo
     (async () => {
-      document.getElementById("loader").style.display = "flex";
-      try {
-        console.log("Cargando modelo...");
-        modelo = await tf.loadGraphModel("model.json");
-        console.log("✅ Modelo cargado correctamente");
+  try {
+    console.log("Cargando modelo...");
+    modelo = await tf.loadGraphModel("model.json");
+    console.log("✅ Modelo cargado correctamente");
 
-        const contenido = document.getElementById("contenido");
-        if (contenido) {
-          console.log("📷 Mostrando contenido");
-          contenido.style.display = "block";
-        } else {
-          console.error("❌ No se encontró #contenido");
-        }
+    // Eliminar el loader completamente del DOM
+    const loader = document.getElementById("loader");
+    if (loader && loader.parentNode) {
+      loader.parentNode.removeChild(loader);
+    }
 
-        mostrarCamara();
-      } catch (error) {
-        console.error("❌ Error al cargar el modelo:", error);
-        document.getElementById("loader").innerHTML = `
-          <div class="text-center text-danger fw-bold">
-            Error al cargar el modelo.<br>Revisa la consola (F12).
-          </div>
-        `;
-      }
-    })();
+    // Mostrar el contenido principal
+    const contenido = document.getElementById("contenido");
+    if (contenido) {
+      contenido.style.display = "block";
+    }
+
+    mostrarCamara();
+  } catch (error) {
+    console.error("❌ Error al cargar el modelo:", error);
+    const loader = document.getElementById("loader");
+    if (loader) {
+      loader.innerHTML = `
+        <div class="text-center text-danger fw-bold">
+          ❌ Error al cargar el modelo.<br>Revisa la consola.
+        </div>
+      `;
+    }
+  }
+})();
 
     function mostrarCamara() {
       const opciones = {
