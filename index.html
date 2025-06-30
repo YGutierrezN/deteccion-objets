@@ -3,79 +3,521 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Clasificador de Objetos</title>
+  <title>Clasificador de Objetos IA</title>
   <link rel="icon" type="image/png" href="favicon-32x32.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
+    :root {
+      --primary-color: #5A827E;
+      --secondary-color: #84AE92;
+      --accent-color: #B9D4AA;
+      --success-color: #84AE92;
+      --warning-color: #B9D4AA;
+      --light-color: #FAFFCA;
+      --dark-color: #2c3e50;
+      --light-bg: #f8fafc;
+      --card-shadow: 0 20px 25px -5px rgba(90, 130, 126, 0.15), 0 10px 10px -5px rgba(90, 130, 126, 0.08);
+      --gradient-bg: linear-gradient(135deg, #5A827E 0%, #84AE92 100%);
+      --gradient-accent: linear-gradient(135deg, #B9D4AA 0%, #FAFFCA 100%);
+      --gradient-light: linear-gradient(135deg, #FAFFCA 0%, #B9D4AA 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      background-color: #f8f9fa;
+      background: linear-gradient(135deg, #5A827E 0%, #84AE92 25%, #B9D4AA 75%, #FAFFCA 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow-x: hidden;
     }
+
+    /* Animated background particles */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+      animation: float 6s ease-in-out infinite;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Navbar styles */
+    .navbar {
+      background: rgba(255, 255, 255, 0.1) !important;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .navbar img {
+      transition: transform 0.3s ease;
+    }
+
+    .navbar:hover img {
+      transform: rotate(360deg);
+    }
+
+    /* Main container */
+    .main-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 30px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin: 2rem auto;
+      max-width: 900px;
+      animation: slideIn 0.8s ease-out;
+      overflow: hidden;
+    }
+
+    .header-section {
+      background: var(--gradient-bg);
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .header-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 75%, transparent 75%);
+      background-size: 40px 40px;
+      animation: move 4s linear infinite;
+    }
+
+    @keyframes move {
+      0% { background-position: 0 0; }
+      100% { background-position: 40px 40px; }
+    }
+
+    .header-section h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-section p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Canvas container */
+    .canvas-container {
+      position: relative;
+      display: inline-block;
+      margin: 2rem 0;
+    }
+
     #canvas {
-      border: 2px dashed #6c757d;
-      border-radius: 10px;
+      border: 4px solid transparent;
+      border-radius: 20px;
+      background: linear-gradient(white, white) padding-box,
+                  var(--gradient-bg) border-box;
+      box-shadow: 
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
     }
+
+    #canvas:hover {
+      transform: scale(1.02);
+      box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.25),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Result display */
     #resultado {
-      font-size: 1.8rem;
-      margin-top: 1rem;
-      font-weight: bold;
-      color: #198754;
+      background: var(--gradient-light);
+      color: var(--dark-color);
+      padding: 1.5rem 2rem;
+      border-radius: 15px;
+      margin: 2rem 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+      box-shadow: var(--card-shadow);
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(185, 212, 170, 0.3);
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
     }
+
+    #resultado:empty {
+      background: rgba(185, 212, 170, 0.2);
+      color: var(--primary-color);
+    }
+
+    #resultado:empty::after {
+      content: "Captura una imagen para ver el resultado";
+      opacity: 0.7;
+      font-weight: 400;
+    }
+
+    /* Buttons */
+    .btn-custom {
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 15px;
+      border: none;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      margin: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-custom::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-custom:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary-custom {
+      background: var(--gradient-bg);
+      color: white;
+      box-shadow: 0 10px 20px rgba(90, 130, 126, 0.3);
+    }
+
+    .btn-primary-custom:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(90, 130, 126, 0.4);
+    }
+
+    .btn-secondary-custom {
+      background: rgba(250, 255, 202, 0.3);
+      color: var(--primary-color);
+      border: 2px solid rgba(90, 130, 126, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary-custom:hover {
+      background: rgba(185, 212, 170, 0.2);
+      border-color: var(--secondary-color);
+      transform: translateY(-2px);
+    }
+
+    /* Loader */
     #loader {
-      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--gradient-bg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .loader-content {
+      text-align: center;
+      color: white;
+    }
+
+    .custom-spinner {
+      width: 80px;
+      height: 80px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 2rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loader-text {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .loader-subtext {
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+
+    /* Footer */
+    .footer {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      color: white;
+      margin-top: 4rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer h1 {
+      background: var(--gradient-accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 800;
+    }
+
+    /* Status indicators */
+    .status-indicator {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--secondary-color);
+      box-shadow: 0 0 0 4px rgba(132, 174, 146, 0.3);
+      animation: pulse-indicator 2s infinite;
+    }
+
+    @keyframes pulse-indicator {
+      0% { box-shadow: 0 0 0 0 rgba(132, 174, 146, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(132, 174, 146, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(132, 174, 146, 0); }
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .main-container {
+        margin: 1rem;
+        border-radius: 20px;
+      }
+      
+      .header-section h1 {
+        font-size: 2rem;
+      }
+      
+      .header-section p {
+        font-size: 1rem;
+      }
+      
+      #canvas {
+        width: 100%;
+        max-width: 350px;
+        height: auto;
+      }
+      
+      .btn-custom {
+        width: 100%;
+        margin: 0.5rem 0;
+      }
+    }
+
+    /* Accessibility improvements */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Focus styles for accessibility */
+    .btn-custom:focus,
+    #canvas:focus {
+      outline: 3px solid rgba(102, 126, 234, 0.6);
+      outline-offset: 2px;
     }
   </style>
 </head>
 <body>
   <!-- Navbar -->
-  <nav class="navbar  rounded-bottom  " style="background-color: #6f42c1">
+  <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container-fluid">
-      <a class="navbar-brand d-flex align-items-center text-light " href="#">
-        <img src="LogotipoV2-Simple.png" alt="Logo" width="40" height="40" class="me-2">
-        Clasificador de Objetos
+      <a class="navbar-brand d-flex align-items-center text-light" href="#" aria-label="Clasificador de Objetos - Inicio">
+        <i class="fas fa-eye me-2" aria-hidden="true"></i>
+        <span>Clasificador IA</span>
       </a>
     </div>
   </nav>
-  <div style="height: 70px;"></div>
 
-  <!-- Spinner -->
-  <div id="loader" class="d-flex justify-content-center align-items-center">
-    <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
-      <span class="visually-hidden">Cargando...</span>
+  <!-- Loader -->
+  <div id="loader" role="status" aria-label="Cargando aplicación">
+    <div class="loader-content">
+      <div class="custom-spinner" aria-hidden="true"></div>
+      <div class="loader-text">Cargando IA...</div>
+      <div class="loader-subtext">Preparando el modelo de clasificación</div>
     </div>
   </div>
 
-  <!-- Contenido -->
-  <div class="container text-center" id="contenido" style="display: none;">
-    <h2 class="my-3"> Clasificador   De objetos para personas con discapacidades visuales</h2>
-    <p>Clasifica objetos con la cámara web</p>
+  <!-- Main Content -->
+  <div class="container-fluid px-3" style="padding-top: 100px;">
+    <div class="main-container" id="contenido" style="display: none;">
+      
+      <!-- Header Section -->
+      <div class="header-section">
+        <h1><i class="fas fa-robot me-3" aria-hidden="true"></i>Clasificador de Objetos IA</h1>
+        <p class="lead mb-0">Tecnología avanzada para personas con discapacidades visuales</p>
+      </div>
 
-    <canvas id="canvas" width="400" height="400" class="img-fluid mb-3"></canvas>
-    <video id="video" autoplay playsinline class="d-none"></video>
-    <canvas id="otrocanvas" width="100" height="100" class="d-none"></canvas>
+      <!-- Main Content Area -->
+      <div class="p-4 text-center">
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            
+            <!-- Camera Section -->
+            <div class="canvas-container position-relative">
+              <canvas id="canvas" width="400" height="400" 
+                      class="img-fluid" 
+                      role="img" 
+                      aria-label="Vista previa de la cámara para clasificación de objetos"
+                      tabindex="0"></canvas>
+              <div class="status-indicator" 
+                   title="Cámara activa" 
+                   aria-label="Indicador de cámara activa"></div>
+            </div>
 
-    <div id="resultado"></div>
+            <!-- Hidden elements -->
+            <video id="video" autoplay playsinline class="d-none" aria-hidden="true"></video>
+            <canvas id="otrocanvas" width="100" height="100" class="d-none" aria-hidden="true"></canvas>
 
-    <div class="mt-3">
-      <button class="btn btn-success me-2" onclick="predecir()">📷 Capturar y Predecir</button>
-      <button class="btn btn-outline-secondary" onclick="cambiarCamara()">🔄 Cambiar Cámara</button>
-    </div>
-  </div>
+            <!-- Result Display -->
+            <div id="resultado" 
+                 role="region" 
+                 aria-live="polite" 
+                 aria-label="Resultado de la clasificación"></div>
 
+            <!-- Control Buttons -->
+            <div class="mt-4">
+              <button class="btn btn-custom btn-primary-custom" 
+                      onclick="predecir()" 
+                      aria-describedby="capture-help">
+                <i class="fas fa-camera me-2" aria-hidden="true"></i>
+                Capturar y Analizar
+              </button>
+              
+              <button class="btn btn-custom btn-secondary-custom" 
+                      onclick="cambiarCamara()" 
+                      aria-describedby="camera-help">
+                <i class="fas fa-sync-alt me-2" aria-hidden="true"></i>
+                Cambiar Cámara
+              </button>
+            </div>
 
+            <!-- Hidden help text for screen readers -->
+            <div id="capture-help" class="sr-only">
+              Captura la imagen actual de la cámara y la analiza usando inteligencia artificial para identificar objetos
+            </div>
+            <div id="camera-help" class="sr-only">
+              Alterna entre la cámara frontal y trasera del dispositivo
+            </div>
 
-    <div class=" text-secondary mt-5 px-4 py-2 text-light text-center"style="background-color: #6f42c1">
-        <div class="py-5">
-          <h1 class="display-5 fw-bold text-white">deepnono</h1>
-          <div class="col-lg-6 mx-auto">
-            <p > Sistemas Inteligentes 2025</p>
-            <p >© 2025</p>
+            <!-- Instructions -->
+            <div class="mt-5 p-4 rounded-3" style="background: rgba(102, 126, 234, 0.1);">
+              <h3 class="h5 mb-3">
+                <i class="fas fa-info-circle me-2 text-primary" aria-hidden="true"></i>
+                Instrucciones de Uso
+              </h3>
+              <div class="row text-start">
+                <div class="col-md-6">
+                  <ul class="list-unstyled">
+                    <li class="mb-2">
+                      <i class="fas fa-check text-success me-2" aria-hidden="true"></i>
+                      Posiciona el objeto frente a la cámara
+                    </li>
+                    <li class="mb-2">
+                      <i class="fas fa-check text-success me-2" aria-hidden="true"></i>
+                      Asegúrate de tener buena iluminación
+                    </li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <ul class="list-unstyled">
+                    <li class="mb-2">
+                      <i class="fas fa-check text-success me-2" aria-hidden="true"></i>
+                      Presiona "Capturar y Analizar"
+                    </li>
+                    <li class="mb-2">
+                      <i class="fas fa-check text-success me-2" aria-hidden="true"></i>
+                      Escucha el resultado por audio
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer text-center py-5">
+    <div class="container">
+      <h1 class="display-6 fw-bold mb-3">deepnono</h1>
+      <p class="mb-2">Sistemas Inteligentes 2025</p>
+      <p class="mb-0 opacity-75">© 2025 - Tecnología accesible para todos</p>
+    </div>
+  </footer>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0/dist/tf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/4.2.0/tf.min.js"></script>
 
   <script>
     const tamano = 400;
@@ -89,38 +531,87 @@
 
     const clases = ["Alto", "camion", "bicicleta", "luz de pare", "persona", "carro"];
 
-    // Cargar modelo
+    // Función para hablar el resultado (accesibilidad)
+    function hablarResultado(texto) {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(texto);
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.8;
+        speechSynthesis.speak(utterance);
+      }
+    }
+
+    // Verificar que TensorFlow se haya cargado
+    function verificarTensorFlow() {
+      return new Promise((resolve, reject) => {
+        if (typeof tf !== 'undefined') {
+          resolve();
+        } else {
+          // Intentar cargar TensorFlow desde CDN alternativo
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0/dist/tf.min.js';
+          script.onload = () => {
+            if (typeof tf !== 'undefined') {
+              resolve();
+            } else {
+              reject(new Error('No se pudo cargar TensorFlow.js'));
+            }
+          };
+          script.onerror = () => reject(new Error('Error al cargar TensorFlow.js'));
+          document.head.appendChild(script);
+        }
+      });
+    }
+
+    // Cargar modelo con mejor feedback
     (async () => {
-  try {
-    console.log("Cargando modelo...");
-    modelo = await tf.loadGraphModel("model.json");
-    console.log("✅ Modelo cargado correctamente");
+      try {
+        console.log("Verificando TensorFlow...");
+        await verificarTensorFlow();
+        console.log("✅ TensorFlow cargado correctamente");
+        
+        console.log("Cargando modelo...");
+        modelo = await tf.loadGraphModel("model.json");
+        console.log("✅ Modelo cargado correctamente");
 
-    // Eliminar el loader completamente del DOM
-    const loader = document.getElementById("loader");
-    if (loader && loader.parentNode) {
-      loader.parentNode.removeChild(loader);
-    }
+        // Animación de salida del loader
+        const loader = document.getElementById("loader");
+        if (loader) {
+          loader.style.opacity = '0';
+          loader.style.transition = 'opacity 0.5s ease';
+          setTimeout(() => {
+            if (loader.parentNode) {
+              loader.parentNode.removeChild(loader);
+            }
+          }, 500);
+        }
 
-    // Mostrar el contenido principal
-    const contenido = document.getElementById("contenido");
-    if (contenido) {
-      contenido.style.display = "block";
-    }
+        // Mostrar contenido con animación
+        const contenido = document.getElementById("contenido");
+        if (contenido) {
+          contenido.style.display = "block";
+          contenido.style.opacity = '0';
+          setTimeout(() => {
+            contenido.style.transition = 'opacity 0.8s ease';
+            contenido.style.opacity = '1';
+          }, 100);
+        }
 
-    mostrarCamara();
-  } catch (error) {
-    console.error("❌ Error al cargar el modelo:", error);
-    const loader = document.getElementById("loader");
-    if (loader) {
-      loader.innerHTML = `
-        <div class="text-center text-danger fw-bold">
-          ❌ Error al cargar el modelo.<br>Revisa la consola.
-        </div>
-      `;
-    }
-  }
-})();
+        mostrarCamara();
+      } catch (error) {
+        console.error("❌ Error al cargar el modelo:", error);
+        const loader = document.getElementById("loader");
+        if (loader) {
+          loader.innerHTML = `
+            <div class="loader-content">
+              <i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem; margin-bottom: 2rem;"></i>
+              <div class="loader-text text-danger">Error al cargar el modelo</div>
+              <div class="loader-subtext">Por favor, revisa la conexión y recarga la página</div>
+            </div>
+          `;
+        }
+      }
+    })();
 
     function mostrarCamara() {
       const opciones = {
@@ -134,7 +625,10 @@
           video.srcObject = stream;
           procesarCamara();
         })
-        .catch(() => alert("No se pudo acceder a la cámara"));
+        .catch((error) => {
+          console.error("Error al acceder a la cámara:", error);
+          alert("No se pudo acceder a la cámara. Verifica los permisos.");
+        });
     }
 
     function cambiarCamara() {
@@ -151,29 +645,66 @@
     }
 
     function predecir() {
-      if (!modelo) return;
-
-      resample_single(canvas, 100, 100, otrocanvas);
-      const ctx2 = otrocanvas.getContext("2d");
-      const imgData = ctx2.getImageData(0, 0, 100, 100);
-
-      let arr = [], arr100 = [];
-      for (let p = 0; p < imgData.data.length; p += 4) {
-        let gris = (imgData.data[p] + imgData.data[p + 1] + imgData.data[p + 2]) / 3 / 255;
-        arr100.push([gris]);
-        if (arr100.length === 100) {
-          arr.push(arr100);
-          arr100 = [];
-        }
+      if (!modelo) {
+        alert("El modelo aún se está cargando. Por favor, espera.");
+        return;
       }
 
-      const tensor = tf.tensor4d([arr]);
-      const resultado = modelo.predict(tensor);
+      // Efecto visual de procesamiento más rápido
+      const resultadoDiv = document.getElementById("resultado");
+      resultadoDiv.innerHTML = '<i class="fas fa-brain me-2"></i>Analizando...';
+      resultadoDiv.style.background = 'var(--gradient-accent)';
+      resultadoDiv.style.color = 'var(--primary-color)';
 
-      resultado.array().then(data => {
-        const indexMax = data[0].indexOf(Math.max(...data[0]));
-        document.getElementById("resultado").innerText = "El objeto detectado es: " + clases[indexMax];
-      });
+      // Procesar inmediatamente sin setTimeout
+      try {
+        resample_single(canvas, 100, 100, otrocanvas);
+        const ctx2 = otrocanvas.getContext("2d");
+        const imgData = ctx2.getImageData(0, 0, 100, 100);
+
+        let arr = [], arr100 = [];
+        for (let p = 0; p < imgData.data.length; p += 4) {
+          let gris = (imgData.data[p] + imgData.data[p + 1] + imgData.data[p + 2]) / 3 / 255;
+          arr100.push([gris]);
+          if (arr100.length === 100) {
+            arr.push(arr100);
+            arr100 = [];
+          }
+        }
+
+        const tensor = tf.tensor4d([arr]);
+        const resultado = modelo.predict(tensor);
+
+        resultado.array().then(data => {
+          const indexMax = data[0].indexOf(Math.max(...data[0]));
+          const confianza = (Math.max(...data[0]) * 100).toFixed(1);
+          const objetoDetectado = clases[indexMax];
+          
+          const textoResultado = `🎯 ${objetoDetectado} (${confianza}% confianza)`;
+          resultadoDiv.innerHTML = textoResultado;
+          
+          // Hablar el resultado para accesibilidad
+          hablarResultado(`Objeto detectado: ${objetoDetectado}`);
+          
+          // Efecto de éxito con nuevos colores
+          resultadoDiv.style.background = 'var(--gradient-light)';
+          resultadoDiv.style.color = 'var(--primary-color)';
+          
+          // Limpiar tensor para liberar memoria
+          tensor.dispose();
+          resultado.dispose();
+        }).catch(error => {
+          console.error("Error en predicción:", error);
+          resultadoDiv.innerHTML = '❌ Error en la predicción';
+          resultadoDiv.style.background = '#ffebee';
+          resultadoDiv.style.color = '#c62828';
+        });
+      } catch (error) {
+        console.error("Error en procesamiento:", error);
+        resultadoDiv.innerHTML = '❌ Error en el procesamiento';
+        resultadoDiv.style.background = '#ffebee';
+        resultadoDiv.style.color = '#c62828';
+      }
     }
 
     function resample_single(canvas, width, height, resize_canvas) {
@@ -225,6 +756,16 @@
 
       ctx2.putImageData(img2, 0, 0);
     }
+
+    // Keyboard accessibility
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        if (e.target.id === 'canvas') {
+          e.preventDefault();
+          predecir();
+        }
+      }
+    });
   </script>
 </body>
 </html>
